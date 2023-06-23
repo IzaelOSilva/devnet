@@ -1,0 +1,116 @@
+Senha: Cisco123!
+
+Links:
+- https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html
+- https://www.redhat.com/pt-br/topics/automation/learning-ansible-tutorial
+- https://docs.ansible.com/ansible/2.9/modules/list_of_all_modules.html
+- https://docs.ansible.com/ansible/2.8/modules/package_module.html
+- https://docs.ansible.com/ansible/2.8/modules/apt_module.html?highlight=apt
+- https://www.jenkins.io/doc/book/installing/linux/
+- https://docs.ansible.com/ansible/latest/playbook_guide/playbooks.html
+- https://docs.ansible.com/ansible/latest/collections/ansible/builtin/user_module.html
+- https://docs.ansible.com/ansible/latest/collections/ansible/builtin/apt_key_module.html
+### VM com rede interna
+- Congfigurar VmWare como rede interna
+  - Na configuração da VM add uma nova rede
+    /Congigurações
+      /Rede
+        /Adaptador 2
+          [x] Hablitar Placa de Rede
+            - Conectado a: Rede Interna
+            - Rede: devasc
+    > Ok
+    Start VM
+### Renomear maquina
+nano /etc/hostname
+### Listar interfaces de rede
+ip addr
+### Criar arquivo de coniguração da interface de rede
+sudo nano /etc/netplan/02-netcfg.yaml
+### Configuração placa de rede usando netplan
+network:
+  renderer: networkd
+  ethernets:
+    enp0s8:
+      addresses:
+        - 192.16.0.1/24
+      nameservers:
+        addresses: [8.8.8.8]
+  version: 2
+
+### Aplicando configuração
+sudo netplan apply
+### Criar estrutura de configurações
+### Configurar ansible.cfg
+sudo nano /etc/hostname
+sudo service ssh start
+
+
+
+code ansible.cfg
+[defaults]
+# Indicar caminho do asrquivo hosts
+inventory=./hosts
+host_key_checking = False
+retry_files_enabled = False
+
+code hosts
+### Configurar hosts
+[master]
+192.16.0.1 ansible_ssh_user=devasc ansible_ssh_pass=Cisco123!
+[slave]
+192.16.0.3 ansible_ssh_user=devasc ansible_ssh_pass=Cisco123!
+
+### Testar comunicação do ansible
+ansible master -m ping
+code install-jenkins.yml
+### Configurar playbook
+---
+- hosts: jenkins
+  become: yes
+  tasks:
+  - name: install ca-certificates
+    apt:
+      name: ca-certificates
+      state: present
+      update_cache: yes
+
+  - name: add jenkins apt-key
+#    apt_key:
+#      url: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+#      state: present
+    get_url:
+        url: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+        dest: /usr/share/keyrings/jenkins-keyring.asc
+
+  - name: add jenkins apt repository
+    apt_repository:
+      repo: 'deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/'
+      state: present
+      filename: jenkins
+      update_cache: yes
+
+  - name: install openjdk-11-jre
+    apt:
+      name: openjdk-11-jre
+      state: present
+  
+  - name: install jenkins
+    apt:
+      name: jenkins
+      state: present
+  
+  - name: daemon-reload to pick up config changes
+    ansible.builtin.systemd:
+      daemon_reload: yes
+
+  - name: Start jenkins
+    ansible.builtin.systemd:
+      name: jenkins
+      state: started
+
+  - name: Key
+    shell: 'cat /var/lib/jenkins/secrets/initialAdminPassword'
+
+
+sudo apt install openssh-server
