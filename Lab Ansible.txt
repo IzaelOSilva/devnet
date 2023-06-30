@@ -10,6 +10,10 @@ Links:
 - https://docs.ansible.com/ansible/latest/playbook_guide/playbooks.html
 - https://docs.ansible.com/ansible/latest/collections/ansible/builtin/user_module.html
 - https://docs.ansible.com/ansible/latest/collections/ansible/builtin/apt_key_module.html
+- https://ansible.readthedocs.io/projects/lint/installing/
+- https://www.jenkins.io/blog/2022/12/27/run-jenkins-agent-as-a-service/
+
+
 ### VM com rede interna
 - Congfigurar VmWare como rede interna
   - Na configuração da VM add uma nova rede
@@ -44,8 +48,6 @@ sudo netplan apply
 ### Configurar ansible.cfg
 sudo nano /etc/hostname
 sudo service ssh start
-
-
 
 code ansible.cfg
 [defaults]
@@ -112,5 +114,25 @@ code install-jenkins.yml
   - name: Key
     shell: 'cat /var/lib/jenkins/secrets/initialAdminPassword'
 
+
+Configurar Agent jenkins
+ Set up a distributed build
+  /Set up an agent
+    /Node name
+    /Type -> * Permanent Agent
+
+    /Remote root directory -> caminho onde serão baixados os arquivos necessarios para a execução do job "/home/jenkins"
+
+    /Labels -> usado para atribiir um alias a um gropo de agentes no jenkins
+
+    /Usage -> como o agente deve ser usado -> * Only build jobs with label expressions matching this node
+
+    /Launch method -> forma no qual o agent sera iniciado -> * Launch agent by connecting it to the controller
+      /Use WebSocket
+    
+    /Availabilit -> * Keep this agent online as much as possible
+  click (SAVE)
+
+  na lista de nodes clique no nó srv-slave1
 
 sudo apt install openssh-server
