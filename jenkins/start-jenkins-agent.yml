@@ -46,11 +46,6 @@
         mode: 0755
         state: touch
     
-    - name: Copiando script sh
-      ansible.builtin.copy:
-        content: "java -jar agent.jar -jnlpUrl http://localhost:8080/computer/srv%2Dslave1/jenkins-agent.jnlp -secret 70450be6bda0e02a496e21331520c00c355b2ffbf59922002c1e48517905d8df -workDir '/home/jenkins'"
-        dest: /opt/jenkins/start-agent.sh
-    
     - name: Criando arquivo jenkins-agent.service
       ansible.builtin.file:
         path: /etc/systemd/system/jenkins-agent.service
