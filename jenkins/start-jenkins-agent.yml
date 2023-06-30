@@ -1,0 +1,74 @@
+---
+- hosts: slave
+  become: yes
+  tasks:
+    - name: Criando Grupo Jenkins
+      ansible.builtin.group:
+        name: jenkins
+        state: present
+
+    - name: Criando Usuario Jenkins
+      ansible.builtin.user:
+        name: jenkins
+        comment: Jenkins Agent
+        groups: jenkins
+        shell: /bin/bash
+        home: /home/jenkins
+        state: present
+
+    - name: install openjdk-11-jre
+      apt:
+        name: openjdk-11-jre
+        state: present
+    
+    - name: Criando Diretorio jenkins em /opt
+      ansible.builtin.file:
+        path: /opt/jenkins
+        owner: jenkins
+        group: jenkins
+        mode: 0755
+        state: directory
+        recurse: yes
+
+    - name: Baixando agente jenkins
+      get_url:
+        url: http://192.16.0.1:8080/jnlpJars/agent.jar
+        dest: /opt/jenkins/agent.jar
+        owner: jenkins
+        group: jenkins
+        mode: 0755
+    
+    - name: Criando arquivo start-agent.sh
+      ansible.builtin.file:
+        path: /opt/jenkins/start-agent.sh
+        owner: jenkins
+        group: jenkins
+        mode: 0755
+        state: touch
+    
+    - name: Copiando script sh
+      ansible.builtin.copy:
+        content: "java -jar agent.jar -jnlpUrl http://localhost:8080/computer/srv%2Dslave1/jenkins-agent.jnlp -secret 70450be6bda0e02a496e21331520c00c355b2ffbf59922002c1e48517905d8df -workDir '/home/jenkins'"
+        dest: /opt/jenkins/start-agent.sh
+    
+    - name: Criando arquivo jenkins-agent.service
+      ansible.builtin.file:
+        path: /etc/systemd/system/jenkins-agent.service
+        state: touch   
+
+    - name: Copiando configuracao para Jenkins Service
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/jenkins-agent.service
+        src: modelos/jenkins-agent.service 
+
+    - name: Gerando script para start-agente
+      ansible.builtin.copy:
+        dest: /opt/jenkins/start-agent.sh
+        src: modelos/start-agent.sh
+
+    - name: Start jenkins-agent
+      ansible.builtin.systemd:
+        daemon_reload: true
+        name: jenkins-agent
+        state: started
+        enabled: true

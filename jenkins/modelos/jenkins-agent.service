@@ -1,0 +1,11 @@
+[Unit]
+Description=Jenkins Agent
+
+[Service]
+User=jenkins
+WorkingDirectory=/home/jenkins
+ExecStart=/bin/bash /opt/jenkins/start-agent.sh
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

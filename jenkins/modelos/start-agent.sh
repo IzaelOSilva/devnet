@@ -1,0 +1,2 @@
+!#/bin/bash
+java -jar /opt/jenkins/agent.jar -jnlpUrl http://192.16.0.1:8080/computer/srv%2Dslave1/jenkins-agent.jnlp -secret 70450be6bda0e02a496e21331520c00c355b2ffbf59922002c1e48517905d8df -workDir "/home/jenkins"

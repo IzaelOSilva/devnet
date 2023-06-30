@@ -1,0 +1,5 @@
+[master]
+192.16.0.1 ansible_ssh_user=devasc ansible_ssh_pass=Cisco123!
+
+[slave]
+192.16.0.2 ansible_ssh_user=devasc ansible_ssh_pass=Cisco123!

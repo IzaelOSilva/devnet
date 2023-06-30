@@ -1,0 +1,45 @@
+---
+- hosts: master
+  become: yes
+  tasks:
+
+  - name: Update
+    shell: 'apt update && apt clean'
+
+  - name: Instalacao ca-certificates
+    apt:
+      name: ca-certificates
+      state: latest
+
+  - name: Add jenkins apt-key
+    get_url:
+      url: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+      dest: /usr/share/keyrings/jenkins-keyring.asc
+
+  - name: add jenkins apt repository
+    apt_repository:
+      repo: 'deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/'
+      state: present
+      filename: jenkins
+      update_cache: yes
+  
+  - name: install openjdk-11-jre
+    apt:
+      name: openjdk-11-jre
+      state: present
+
+  - name: install jenkins
+    apt:
+      name: jenkins
+      state: present
+      
+  - name: daemon-reload to pick up config changes
+    ansible.builtin.systemd:
+      daemon_reload: yes
+      
+  - name: Start jenkins
+    ansible.builtin.systemd:
+      name: jenkins
+      state: started
+  - name: Key
+    shell: 'cat /var/lib/jenkins/secrets/initialAdminPassword'
